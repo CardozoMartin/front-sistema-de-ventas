@@ -117,7 +117,7 @@ export const useLogout = () => {
         localStorage.removeItem('products');
         localStorage.removeItem('promotions');
       } catch (err) {
-        console.error("Error al limpiar localStorage:", err);
+        // Error silently ignored
       }
       
       return Promise.resolve();

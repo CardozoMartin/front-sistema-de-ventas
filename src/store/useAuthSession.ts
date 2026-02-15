@@ -27,11 +27,9 @@ const validateToken = (token: string | null): AuthState => {
 
   try {
     const decoded = jwtDecode<DecodedToken>(token);
-    console.log("Decoded token:", decoded);
 
     // Verificar si el token ha expirado
     if (!decoded.exp || isTokenExpired(decoded.exp)) {
-      console.warn("Token expirado");
       return {
         user: null,
         isLoggedIn: false,
@@ -59,7 +57,6 @@ const validateToken = (token: string | null): AuthState => {
       token,
     };
   } catch (error) {
-    console.error("Error al decodificar token:", error);
     return {
       user: null,
       isLoggedIn: false,
@@ -105,7 +102,7 @@ export const useAuthSession = create<SessionStore>()(
             rol: normalizedRol,
           } as User;
         } catch (err) {
-          console.warn("Failed to decode token during login:", err);
+          // Error decodifying token - continue with userData
         }
 
         set({
@@ -162,7 +159,7 @@ export const useAuthSession = create<SessionStore>()(
         intervalId = setInterval(() => {
           const isValid = get().checkSession();
           if (!isValid) {
-            console.log("Sesión inválida, redirigiendo al login...");
+            // Session is invalid
           }
         }, CHECK_INTERVAL);
       },
@@ -181,7 +178,6 @@ export const useAuthSession = create<SessionStore>()(
         if (state?.token) {
           const validated = validateToken(state.token);
           if (!validated.isLoggedIn) {
-            console.warn("Token expirado detectado al recargar, limpiando...");
             state.user = null;
             state.isLoggedIn = false;
             state.token = null;

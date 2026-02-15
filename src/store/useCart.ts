@@ -66,13 +66,11 @@ export const useCart = create<CartState>()(
       cart: getFromLocalStorage(),
 
       addToCart: (product) => {
-        console.log(`🛒 addToCart llamado - Producto: ${product.name}, Cantidad: ${product.quantity}`);
         const currentCart = get().cart;
         const existingProduct = currentCart.find((item) => item.id === product.id);
         let updatedCart: CartItem[];
 
         if (existingProduct) {
-          console.log(`📦 Producto YA existe en carrito. Cantidad actual: ${existingProduct.quantity}, Sumando: ${product.quantity}`);
           // Si el producto ya existe, actualizar cantidad
           const newQuantity = existingProduct.quantity + product.quantity;
           
@@ -90,9 +88,7 @@ export const useCart = create<CartState>()(
                 }
               : item
           );
-          console.log(`✅ Cantidad actualizada a: ${newQuantity}`);
         } else {
-          console.log(`🆕 Producto NUEVO - Agregando con cantidad: ${product.quantity}`);
           // Validar stock para nuevo producto
           if (product.quantity > product.stock) {
             throw new Error(`Stock insuficiente. Disponible: ${product.stock}`);
@@ -104,7 +100,6 @@ export const useCart = create<CartState>()(
             subtotal: product.price * product.quantity,
           };
           updatedCart = [...currentCart, newItem];
-          console.log(`✅ Producto agregado al carrito`);
         }
         
         set({ cart: updatedCart });

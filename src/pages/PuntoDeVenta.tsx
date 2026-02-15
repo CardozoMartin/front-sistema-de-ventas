@@ -65,25 +65,7 @@ const PointSale = () => {
 
   // Debug: Log de productos y promociones cargados
   useEffect(() => {
-    console.log("📦 Total productos cargados:", products.length);
-    console.log("📝 Productos con 'code':", products.filter(p => p.code).length);
-    console.log("📝 Productos con 'barcode':", products.filter(p => p.barcode).length);
-    console.log("🎁 Total promociones cargadas:", promotions.length);
-    console.log("🎁 Promociones activas:", promotions.filter(p => p.active).length);
-    if (products.length > 0) {
-      console.log("📋 Primer producto:", products[0]);
-      const productWithCode = products.find(p => p.code);
-      if (productWithCode) {
-        console.log("🔑 Producto con code:", {
-          name: productWithCode.name,
-          code: productWithCode.code,
-          barcode: productWithCode.barcode
-        });
-      }
-    }
-    if (promotions.length > 0) {
-      console.log("📋 Primera promoción:", promotions[0]);
-    }
+    // Empty - logs removed in production
   }, [products.length, promotions.length]);
 
   // Calcular totales
@@ -136,7 +118,6 @@ const PointSale = () => {
       }
     });
 
-    console.log(`🔍 Búsqueda: "${searchTerm}" → ${results.length} resultados (${results.filter(r => r.isPromotion).length} promociones)`);
     return results.slice(0, 10);
   }, [searchTerm, products, promotions]);
 
@@ -172,13 +153,11 @@ const PointSale = () => {
           
           // Evitar procesamiento duplicado
           if (isProcessingScanRef.current) {
-            console.log("⚠️ Scanner: Bloqueado - Ya procesando otro escaneo");
             return;
           }
           
           // ===== BLOQUEAR INMEDIATAMENTE =====
           isProcessingScanRef.current = true;
-          console.log(`📷 Scanner: BLOQUEADO - Procesando código "${currentCode}"`);
 
           // Limpiar el código inmediatamente
           setScanCode("");
@@ -196,7 +175,6 @@ const PointSale = () => {
           // Si no se encuentra y el código es muy largo, intentar con la mitad (scanner duplicado)
           if (!product && currentCode.length >= 12 && currentCode.length % 2 === 0) {
             const halfCode = currentCode.substring(0, currentCode.length / 2);
-            console.log(`🔄 Código muy largo, intentando con mitad: "${halfCode}"`);
             product = productsRef.current.find(
               (p: Product) =>
                 (p.code || p.barcode) &&
@@ -206,15 +184,7 @@ const PointSale = () => {
             );
           }
 
-          console.log(`🔍 Búsqueda con código: "${currentCode}"`);
-          console.log(`📋 Productos disponibles con code/barcode:`, 
-            productsRef.current
-              .filter(p => p.code || p.barcode)
-              .map(p => ({ name: p.name, code: p.code, barcode: p.barcode }))
-          );
-
           if (product) {
-            console.log(`✅ Producto encontrado:`, product.name);
             
             if (product.unitType === 'kilogramo') {
               setSelectedProductForWeight(product);
@@ -235,24 +205,20 @@ const PointSale = () => {
                   category: product.category,
                 };
                 if (addToCartRef.current) {
-                  console.log(`🛒 Añadiendo 1 unidad de "${product.name}" al carrito`);
                   addToCartRef.current(cartItem);
                   toast.success(`${product.name} agregado (1 unidad)`);
                 }
               } catch (error) {
-                console.error(`❌ Error al agregar:`, error);
                 toast.error(error instanceof Error ? error.message : "Error al agregar producto");
               }
             }
           } else {
-            console.log(`❌ Producto NO encontrado para código: "${currentCode}"`);
             toast.error(`Producto con código ${currentCode} no encontrado`);
           }
 
           // Resetear flag después de 1 segundo
           setTimeout(() => {
             isProcessingScanRef.current = false;
-            console.log(`🔓 Scanner: DESBLOQUEADO - Listo para nuevo escaneo`);
           }, 1000);
           
           return;
@@ -355,9 +321,7 @@ const PointSale = () => {
 
       toast.success(`Promoción "${promo.name}" agregada al carrito`);
       setSearchTerm("");
-      console.log(`✅ PROMOCIÓN AGREGADA: ${promo.name}`);
     } catch (error) {
-      console.error(`❌ ERROR al agregar promoción:`, error);
       toast.error(error instanceof Error ? error.message : "Error al agregar promoción");
     }
   };
@@ -459,7 +423,6 @@ const PointSale = () => {
         const promoData = cartPromotions.get(promoId);
         
         if (promoData) {
-          console.log(`🎁 Expandiendo promoción: ${promoData.name}`);
           // Agregar cada producto de la promoción multiplicado por la cantidad de promociones
           promoData.items.forEach((promoItem) => {
             expandedDetails.push({
@@ -468,7 +431,6 @@ const PointSale = () => {
             });
           });
         } else {
-          console.warn(`⚠️ No se encontró data para promoción: ${promoId}`);
           toast.error(`Error: No se pudo procesar la promoción ${item.name}`);
         }
       } else {
@@ -485,8 +447,6 @@ const PointSale = () => {
       details: expandedDetails,
       notes: saleNotes.trim() || undefined,
     };
-
-    console.log('📦 Datos de venta a enviar:', saleData);
 
     createSale(saleData, {
       onSuccess: (data) => {
@@ -544,7 +504,6 @@ const PointSale = () => {
                     e.preventDefault();
                     
                     const code = searchTerm.trim();
-                    console.log(`🔍 Enter presionado con código: "${code}"`);
                     
                     // Buscar producto
                     let product = products.find(
@@ -558,7 +517,6 @@ const PointSale = () => {
                     // Intentar con mitad si no se encuentra
                     if (!product && code.length >= 12 && code.length % 2 === 0) {
                       const halfCode = code.substring(0, code.length / 2);
-                      console.log(`🔄 Intentando con mitad: "${halfCode}"`);
                       product = products.find(
                         (p: Product) =>
                           (p.code || p.barcode) &&
@@ -569,8 +527,6 @@ const PointSale = () => {
                     }
                     
                     if (product) {
-                      console.log(`✅ PRODUCTO ENCONTRADO: ${product.name}`);
-                      console.log(`🛒 AGREGANDO AL CARRITO...`);
                       
                       if (product.unitType === 'kilogramo') {
                         setSelectedProductForWeight(product);
@@ -594,9 +550,7 @@ const PointSale = () => {
                           addToCart(cartItem);
                           toast.success(`${product.name} agregado al carrito`);
                           setSearchTerm("");
-                          console.log(`✅ PRODUCTO AGREGADO EXITOSAMENTE`);
                         } catch (error) {
-                          console.error(`❌ ERROR:`, error);
                           toast.error(error instanceof Error ? error.message : "Error al agregar producto");
                         }
                       }
@@ -609,10 +563,8 @@ const PointSale = () => {
                       );
                       
                       if (promotion) {
-                        console.log(`✅ PROMOCIÓN ENCONTRADA: ${promotion.name}`);
                         handleAddPromotionToCart(promotion);
                       } else {
-                        console.log(`❌ NO ENCONTRADO (ni producto ni promoción)`);
                         toast.error(`Producto o promoción no encontrado`);
                       }
                     }

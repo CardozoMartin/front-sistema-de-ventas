@@ -21,14 +21,12 @@ const ProtectedRoute = ({ children, requiredRoles }: ProtectedRouteProps) => {
   if (requiredRoles && requiredRoles.length > 0) {
     // Buscar el rol: primero en user.role (string), luego en user.rol[0].nombre (array)
     const userRole = user.role?.toLowerCase() || user?.rol?.[0]?.nombre?.toLowerCase() || '';
-    console.log('User Role:', userRole, 'Required:', requiredRoles);
     
     const hasPermission = requiredRoles.some(role => 
       role.toLowerCase() === userRole
     );
 
     if (!hasPermission) {
-      console.warn('Acceso denegado. Rol del usuario:', userRole, 'Roles requeridos:', requiredRoles);
       // Redirigir a página de acceso denegado o dashboard
       return <Navigate to="/dashboard/acceso-denegado" replace />;
     }

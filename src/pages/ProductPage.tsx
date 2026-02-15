@@ -10,7 +10,6 @@ const ProductosPage = () => {
 
   // Hook para obtener los productos con paginación
   const { data: productos, isLoading, error } = useProducts({ page, limit });
-  console.log("Productos obtenidos:", productos);
 
   return (
     <div className="space-y-4">

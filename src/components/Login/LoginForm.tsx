@@ -18,7 +18,6 @@ const LoginForm = () => {
   // Navegar al dashboard cuando el login sea exitoso
   useEffect(() => {
     if (isSuccess) {
-      console.log("Login successful, navigating to dashboard");
       navigate("/dashboard");
     }
   }, [isSuccess, navigate]);
@@ -37,7 +36,6 @@ const LoginForm = () => {
   });
 
   const handleLogin = (data: LoginFormData) => {
-    console.log(data);
     // Lógica de autenticación aquí
     postLogin(data);
   };

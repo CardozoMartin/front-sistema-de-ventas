@@ -12,7 +12,6 @@ const RoutesPrivate = () => {
   useEffect(() => {
     const check = checkSession();
     setIsChecking(false);
-    console.log("Session check result:", check);
 
     // Iniciar verificación automática si hay sesión válida
     if (check) {
