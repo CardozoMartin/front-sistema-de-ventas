@@ -135,7 +135,7 @@ const FormProducto = () => {
 
   const buildPayload = (data: CreateProductCommand): CreateProductCommand => {
     const payload: CreateProductCommand = {
-      name: data.name.trim(),
+      name: data.name.trim().toLocaleUpperCase(),
       code: data.barcode.trim(),        // El backend usa 'code'
       barcode: data.barcode.trim(),     // Mantener barcode también
       price: Number(data.price),
