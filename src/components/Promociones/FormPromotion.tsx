@@ -189,7 +189,8 @@ export default function FormPromotion() {
   const promoPrice = watch("promoPrice");
   const originalPrice = watch("originalPrice");
   const promotionType = watch("type");
-  const items = useWatch({ control, name: "items" }) || [];
+  const itemsRaw = useWatch({ control, name: "items" });
+  const items = useMemo(() => itemsRaw || [], [itemsRaw]);
 
   // Calcular originalPrice automáticamente
   useEffect(() => {
