@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { AlertTriangle, Clock, Package, Save, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, Clock, Package, Save, RefreshCw, EyeOff } from "lucide-react";
 import { useAllProductsNoPagination, useUpdateProduct, useRunCatalogMaintenance } from "../../hooks";
 import type { Product } from "../../services/types";
 import { formatCurrency } from "../../utils/formatCurrency";

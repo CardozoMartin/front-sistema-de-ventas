@@ -8,17 +8,15 @@ import {
   Percent,
   RefreshCw,
   Calendar,
-  ArrowUpDown,
   FileSpreadsheet,
   AlertCircle,
-  PieChart,
 } from "lucide-react";
 import { useState } from "react";
 import { useReports } from "../../hooks/useReports";
 import { formatCurrency } from "../../utils/formatCurrency";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  LineChart, Line, PieChart as RechartsPieChart, Cell
+  LineChart, Line
 } from 'recharts';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -200,8 +198,8 @@ const ReportsPageRefined = () => {
     formatDateForInput,
   } = useReports();
 
-  const [sortField, setSortField] = useState<'profit' | 'revenue' | 'quantitySold'>('profit');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const sortField = 'profit' as const;
+  const sortDir = 'desc' as const;
   const [activeTab, setActiveTab] = useState<'products' | 'daily' | 'payments'>('products');
 
   if (isLoading) {
@@ -590,7 +588,7 @@ const ReportsPageRefined = () => {
               <div style={{ height: 250 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={report.dailyReports}
+                    data={report.dailySalesReports}
                     margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
