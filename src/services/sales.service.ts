@@ -81,6 +81,19 @@ export const getSalesByCashRegister = async (cashRegisterId: string): Promise<Sa
 };
 
 /**
+ * Obtener ventas por cliente (usado para cuenta corriente)
+ * GET /api/v1/sales/client/:clientId
+ * @param clientId - ID del cliente
+ * @returns Lista de ventas asociadas al cliente
+ */
+export const getSalesByClient = async (clientId: string): Promise<Sale[]> => {
+  const response = await apiClient.get<ApiResponse<Sale[]>>(
+    `/sales/client/${clientId}`
+  );
+  return response.data.data;
+};
+
+/**
  * Crear una nueva venta
  * POST /api/v1/sales
  * Requiere autenticación (token)

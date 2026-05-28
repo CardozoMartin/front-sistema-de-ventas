@@ -7,6 +7,9 @@ import Swal from "../../utils/swalTheme.ts";
 import { swalCustomClass, swalBackdrop } from "../../utils/swalTheme";
 import { DataGrid } from "../../shared/ui/DataGrid";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Eye } from "lucide-react";
+import { useState } from "react";
+import { ClientDebtDetailsModal } from "../../components/Clientes/ClientDebtDetailsModal";
 
 // Añadimos una interfaz básica para el tipado de Cliente si no está importada
 interface Client {
@@ -22,6 +25,8 @@ const RealClientesPage = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useAuthSession();
   const isAdmin = currentUser?.role === 'admin';
+
+  const [selectedClientForDetails, setSelectedClientForDetails] = useState<{ id: string, name: string } | null>(null);
 
   const { data: clients = [], isLoading, error } = useClients();
   const deleteClientMutation = useDeleteClient();
@@ -219,6 +224,13 @@ const RealClientesPage = () => {
         return (
           <div className="flex items-center justify-center gap-1.5">
             <button
+              onClick={() => setSelectedClientForDetails({ id: client.id, name: client.name })}
+              className="icon-btn hover:bg-blue-50 hover:text-blue-700"
+              title="Ver Detalle de Cuenta"
+            >
+              <Eye size={16} />
+            </button>
+            <button
               onClick={() => handlePayDebt(client.id, client.name, client.debt)}
               disabled={client.debt <= 0}
               className="icon-btn hover:bg-accent-50 hover:text-accent-700 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -296,6 +308,13 @@ const RealClientesPage = () => {
         data={clients}
         columns={columns}
         searchPlaceholder="Buscar por nombre, teléfono o email..."
+      />
+
+      <ClientDebtDetailsModal 
+        show={!!selectedClientForDetails}
+        onClose={() => setSelectedClientForDetails(null)}
+        clientId={selectedClientForDetails?.id || ""}
+        clientName={selectedClientForDetails?.name || ""}
       />
     </div>
   );

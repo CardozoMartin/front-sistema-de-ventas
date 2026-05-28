@@ -17,6 +17,7 @@ export const saleKeys = {
   detail: (id: string) => [...saleKeys.details(), id] as const,
   bySeller: (sellerId: string) => [...saleKeys.all, 'seller', sellerId] as const,
   byCashRegister: (cashRegisterId: string) => [...saleKeys.all, 'cashRegister', cashRegisterId] as const,
+  byClient: (clientId: string) => [...saleKeys.all, 'client', clientId] as const,
 };
 
 // ==================== QUERIES (GET) ====================
@@ -87,6 +88,21 @@ export const useSalesByCashRegister = (cashRegisterId: string | null, enabled = 
     queryFn: () => salesService.getSalesByCashRegister(cashRegisterId || ''),
     enabled: enabled && (cashRegisterId?.length || 0) > 0,
     staleTime: 1 * 60 * 1000, // Los datos se consideran frescos por 1 minuto (transactions are more dynamic)
+  });
+};
+
+/**
+ * Hook para obtener ventas de un cliente específico (cuenta corriente)
+ * @param clientId - ID del cliente
+ * @param enabled - Si la query debe ejecutarse
+ * @returns Query con las ventas del cliente
+ */
+export const useSalesByClient = (clientId: string | null, enabled = true) => {
+  return useQuery({
+    queryKey: saleKeys.byClient(clientId || ''),
+    queryFn: () => salesService.getSalesByClient(clientId || ''),
+    enabled: enabled && (clientId?.length || 0) > 0,
+    staleTime: 1 * 60 * 1000,
   });
 };
 
