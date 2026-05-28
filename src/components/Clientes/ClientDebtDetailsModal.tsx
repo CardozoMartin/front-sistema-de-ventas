@@ -2,7 +2,14 @@ import { createPortal } from "react-dom";
 import { useSalesByClient } from "../../hooks/useSales";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { X, Calendar, Package, AlertCircle } from "lucide-react";
-import dayjs from "dayjs";
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
 
 interface ClientDebtDetailsModalProps {
   show: boolean;
@@ -63,7 +70,7 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
                   <div className="bg-neutral-50 border-b border-neutral-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-sm text-neutral-600">
                       <Calendar size={16} className="text-neutral-400" />
-                      <span className="font-medium">{dayjs(sale.createdAt).format('DD/MM/YYYY HH:mm')}</span>
+                      <span className="font-medium">{formatDate(sale.createdAt)}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
