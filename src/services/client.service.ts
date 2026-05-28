@@ -9,6 +9,7 @@ import type {
   Client,
   CreateClientDto,
   UpdateClientDto,
+  AccountStatementItem
 } from './types';
 
 /**
@@ -67,5 +68,14 @@ export const payClientDebt = async (
   amount: number
 ): Promise<Client> => {
   const response = await apiClient.post<ApiResponse<Client>>(`/clients/${id}/pay`, { amount });
+  return response.data.data;
+};
+
+/**
+ * Obtener estado de cuenta
+ * GET /api/v1/clients/:id/statement
+ */
+export const getAccountStatement = async (id: string): Promise<AccountStatementItem[]> => {
+  const response = await apiClient.get<ApiResponse<AccountStatementItem[]>>(`/clients/${id}/statement`);
   return response.data.data;
 };

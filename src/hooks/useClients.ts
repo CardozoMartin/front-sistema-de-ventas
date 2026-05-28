@@ -14,6 +14,8 @@ export const clientKeys = {
   list: () => [...clientKeys.lists()] as const,
   details: () => [...clientKeys.all, 'detail'] as const,
   detail: (id: string) => [...clientKeys.details(), id] as const,
+  statements: () => [...clientKeys.all, 'statement'] as const,
+  statement: (id: string) => [...clientKeys.statements(), id] as const,
 };
 
 // ==================== QUERIES (GET) ====================
@@ -38,6 +40,18 @@ export const useClient = (id: string, enabled = true) => {
     queryFn: () => clientService.getClientById(id),
     enabled: enabled && !!id,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+/**
+ * Hook para obtener el estado de cuenta de un cliente
+ */
+export const useClientStatement = (id: string, enabled = true) => {
+  return useQuery({
+    queryKey: clientKeys.statement(id),
+    queryFn: () => clientService.getAccountStatement(id),
+    enabled: enabled && !!id,
+    staleTime: 1 * 60 * 1000,
   });
 };
 
@@ -99,6 +113,7 @@ export const usePayClientDebt = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
       queryClient.invalidateQueries({ queryKey: clientKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: clientKeys.statement(variables.id) });
       // También invalidamos el dashboard ya que impacta en ingresos indirectamente
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },

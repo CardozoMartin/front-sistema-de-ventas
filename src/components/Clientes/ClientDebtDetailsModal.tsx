@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom";
-import { useSalesByClient } from "../../hooks/useSales";
+import { useClientStatement } from "../../hooks/useClients";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { X, Calendar, Package, AlertCircle } from "lucide-react";
+import { X, Calendar, Package, AlertCircle, Banknote, ShoppingCart, ArrowDownToLine } from "lucide-react";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -19,13 +19,16 @@ interface ClientDebtDetailsModalProps {
 }
 
 export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: ClientDebtDetailsModalProps) => {
-  const { data: sales, isLoading, error } = useSalesByClient(clientId, show);
+  const { data: statement, isLoading, error } = useClientStatement(clientId, show);
 
   if (!show) return null;
 
-  // Filtrar solo las ventas que fueron a cuenta corriente y que están pendientes
-  // o simplemente todas las cuenta corriente (para que vean el historial)
-  const debtSales = sales?.filter(s => s.paymentMethod === 'cuenta_corriente') || [];
+  const items = statement || [];
+
+  const handleExportPDF = () => {
+    // In a real scenario, this would generate a PDF or trigger a print dialog.
+    window.print();
+  };
 
   const modalContent = (
     <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm flex items-center justify-center z-[99999] p-4 sm:p-6">
@@ -34,12 +37,12 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
         {/* Header */}
         <div className="flex items-center justify-between mb-6 shrink-0">
           <div>
-            <h2 className="text-xl font-semibold text-neutral-900">Detalle de Cuenta Corriente</h2>
-            <p className="text-sm text-neutral-500 mt-1">Historial de compras al fiado de: <span className="font-medium text-neutral-700">{clientName}</span></p>
+            <h2 className="text-xl font-semibold text-neutral-900">Estado de Cuenta (Historial)</h2>
+            <p className="text-sm text-neutral-500 mt-1">Línea de tiempo de: <span className="font-medium text-neutral-700">{clientName}</span></p>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-neutral-100 rounded-md text-neutral-400 hover:text-neutral-700 transition-colors"
+            className="p-2 hover:bg-neutral-100 rounded-md text-neutral-400 hover:text-neutral-700 transition-colors print:hidden"
           >
             <X size={20} />
           </button>
@@ -50,79 +53,128 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="spinner mx-auto mb-4"></div>
-              <p className="text-sm text-neutral-500">Cargando detalles...</p>
+              <p className="text-sm text-neutral-500">Cargando estado de cuenta...</p>
             </div>
           ) : error ? (
             <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm">
               Ocurrió un error al cargar los datos. Intente nuevamente.
             </div>
-          ) : debtSales.length === 0 ? (
+          ) : items.length === 0 ? (
             <div className="text-center py-12 px-4 border border-dashed border-neutral-200 rounded-lg bg-neutral-50/50">
               <Package size={32} className="mx-auto text-neutral-300 mb-3" />
-              <p className="text-neutral-600 font-medium">No hay compras registradas a cuenta corriente.</p>
-              <p className="text-sm text-neutral-400 mt-1">Este cliente no ha fiado productos aún.</p>
+              <p className="text-neutral-600 font-medium">No hay movimientos registrados.</p>
+              <p className="text-sm text-neutral-400 mt-1">Este cliente no tiene compras a cuenta corriente ni abonos.</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {debtSales.map(sale => (
-                <div key={sale.id} className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
-                  {/* Sale Header */}
-                  <div className="bg-neutral-50 border-b border-neutral-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-sm text-neutral-600">
-                      <Calendar size={16} className="text-neutral-400" />
-                      <span className="font-medium">{formatDate(sale.createdAt)}</span>
+            <div className="relative border-l-2 border-neutral-200 ml-4 md:ml-6 space-y-8 pb-4">
+              {items.map((item) => {
+                const isCharge = item.type === 'charge';
+                
+                return (
+                  <div key={item.id} className="relative pl-6 md:pl-8">
+                    {/* Timeline Marker */}
+                    <div className={`absolute -left-[17px] top-1 h-8 w-8 rounded-full flex items-center justify-center border-4 border-white ${
+                      isCharge ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'
+                    }`}>
+                      {isCharge ? <ShoppingCart size={14} /> : <Banknote size={14} />}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        sale.status === 'pendiente' ? 'bg-amber-100 text-amber-700' : 
-                        sale.status === 'pagado' ? 'bg-emerald-100 text-emerald-700' : 
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {sale.status.toUpperCase()}
-                      </span>
-                      <span className="font-semibold text-neutral-900">
-                        {formatCurrency(sale.total)}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Sale Details (Products) */}
-                  <div className="p-4">
-                    <table className="w-full text-sm text-left">
-                      <thead className="text-xs text-neutral-500 uppercase bg-white border-b border-neutral-100">
-                        <tr>
-                          <th className="pb-2 font-medium">Producto</th>
-                          <th className="pb-2 font-medium text-right">Cant.</th>
-                          <th className="pb-2 font-medium text-right">Precio Un.</th>
-                          <th className="pb-2 font-medium text-right">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-50">
-                        {sale.details?.map(detail => (
-                          <tr key={detail.id} className="text-neutral-700">
-                            <td className="py-2.5 font-medium">{detail.productName}</td>
-                            <td className="py-2.5 text-right">{detail.quantity}</td>
-                            <td className="py-2.5 text-right">{formatCurrency(detail.unitPrice)}</td>
-                            <td className="py-2.5 text-right font-medium text-neutral-900">{formatCurrency(detail.subtotal)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {sale.notes && (
-                      <div className="mt-3 flex items-start gap-2 bg-neutral-50 p-2.5 rounded text-xs text-neutral-600">
-                        <AlertCircle size={14} className="text-neutral-400 mt-0.5 flex-shrink-0" />
-                        <p><span className="font-medium">Nota:</span> {sale.notes}</p>
+                    <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                      {/* Item Header */}
+                      <div className={`px-4 py-3 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-3 ${
+                        isCharge ? 'bg-red-50/50' : 'bg-emerald-50/50'
+                      }`}>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar size={16} className="text-neutral-500" />
+                          <span className="font-semibold text-neutral-700">{formatDate(item.date)}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {isCharge && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              item.status === 'pendiente' ? 'bg-amber-100 text-amber-700' : 
+                              item.status === 'pago_parcial' ? 'bg-blue-100 text-blue-700' :
+                              item.status === 'pagado' ? 'bg-emerald-100 text-emerald-700' : 
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {item.status === 'pago_parcial' ? 'PAGO PARCIAL' : item.status?.toUpperCase()}
+                            </span>
+                          )}
+                          <span className={`font-bold ${isCharge ? 'text-red-600' : 'text-emerald-600'}`}>
+                            {isCharge ? '-' : '+'}{formatCurrency(item.amount)}
+                          </span>
+                        </div>
                       </div>
-                    )}
+
+                      {/* Item Details */}
+                      <div className="p-4">
+                        {isCharge ? (
+                          <>
+                            <table className="w-full text-sm text-left mb-2">
+                              <thead className="text-xs text-neutral-500 uppercase bg-white border-b border-neutral-100">
+                                <tr>
+                                  <th className="pb-2 font-medium">Producto</th>
+                                  <th className="pb-2 font-medium text-right">Cant.</th>
+                                  <th className="pb-2 font-medium text-right">Subtotal</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-neutral-50">
+                                {item.details?.map(detail => (
+                                  <tr key={detail.id} className="text-neutral-700">
+                                    <td className="py-2.5 font-medium">{detail.productName}</td>
+                                    <td className="py-2.5 text-right">{detail.quantity}</td>
+                                    <td className="py-2.5 text-right font-medium">{formatCurrency(detail.subtotal)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {item.status === 'pago_parcial' && (
+                              <div className="text-xs text-blue-700 bg-blue-50 px-2 py-1.5 rounded inline-block font-medium">
+                                Abonado a este ticket: {formatCurrency(item.paidAmount || 0)}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-3 text-sm text-neutral-600">
+                            <span className="font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded">
+                              Abono recibido en caja
+                            </span>
+                            {item.notes && <span>({item.notes})</span>}
+                          </div>
+                        )}
+                        
+                        {isCharge && item.notes && (
+                          <div className="mt-3 flex items-start gap-2 bg-neutral-50 p-2.5 rounded text-xs text-neutral-600">
+                            <AlertCircle size={14} className="text-neutral-400 mt-0.5 flex-shrink-0" />
+                            <p><span className="font-medium">Nota:</span> {item.notes}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Running Balance */}
+                      <div className="bg-neutral-800 text-white px-4 py-2 text-sm flex justify-between items-center">
+                        <span className="text-neutral-300">Saldo luego de este movimiento:</span>
+                        <span className="font-mono font-bold tracking-wider">
+                          {formatCurrency(Math.abs(item.balance || 0))} { (item.balance || 0) < 0 ? '(Debe)' : '(A favor)' }
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="border-t border-neutral-200 pt-5 mt-4 shrink-0 flex justify-end">
+        <div className="border-t border-neutral-200 pt-5 mt-4 shrink-0 flex justify-between items-center print:hidden">
+          <button
+            onClick={handleExportPDF}
+            disabled={items.length === 0}
+            className="icon-btn hover:bg-neutral-100 text-neutral-600 gap-2 px-4 py-2 disabled:opacity-50 flex items-center rounded-lg border border-neutral-200 font-medium text-sm transition-colors"
+          >
+            <ArrowDownToLine size={18} />
+            Imprimir Resumen
+          </button>
           <button
             onClick={onClose}
             className="btn-secondary py-2 px-6"

@@ -159,7 +159,7 @@ export type PaymentMethod = 'efectivo' | 'transferencia' | 'cuenta_corriente';
 /**
  * Estados de una venta
  */
-export type SaleStatus = 'pendiente' | 'pagado' | 'cancelado';
+export type SaleStatus = 'pendiente' | 'pago_parcial' | 'pagado' | 'cancelado';
 
 /**
  * Tipo de unidad de medida
@@ -191,6 +191,7 @@ export interface Sale {
   seller: string;
   cashRegister: string;
   total: number;
+  paidAmount?: number;
   totalProfit?: number;
   status: SaleStatus;
   paymentMethod: PaymentMethod;
@@ -393,4 +394,19 @@ export interface UpdateClientDto {
   maxCredit?: number;
   debt?: number;
   active?: boolean;
+}
+
+/**
+ * Movimiento en el Estado de Cuenta
+ */
+export interface AccountStatementItem {
+  id: string;
+  type: 'charge' | 'payment';
+  amount: number;
+  paidAmount?: number;
+  status?: SaleStatus;
+  date: string;
+  details?: SaleDetail[];
+  notes?: string;
+  balance?: number;
 }
