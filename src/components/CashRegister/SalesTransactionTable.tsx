@@ -64,7 +64,7 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                   </td>
                   <td style={{ padding: "9px 16px", fontSize: 12, color: "#555", display: "flex", alignItems: "center", gap: 6 }}>
                     <ShoppingBag size={12} color="#aaa" />
-                    {sale.details && sale.details.length > 0 ? `${sale.details.length} prod.` : "-"}
+                    {sale.notes === 'ABONO_DE_DEUDA' ? 'Abono deuda' : (sale.details && sale.details.length > 0 ? `${sale.details.length} prod.` : "-")}
                   </td>
                   <td style={{ padding: "9px 16px", fontSize: 12, fontWeight: 600, color: "#111" }}>
                     {formatCurrency(sale.total)}
@@ -78,7 +78,7 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                     </span>
                   </td>
                   <td style={{ padding: "9px 16px", textAlign: "right" }}>
-                    {sale.details && sale.details.length > 0 && (
+                    {((sale.details && sale.details.length > 0) || sale.notes === 'ABONO_DE_DEUDA') && (
                       <button onClick={() => toggleExpand(sale.id)} style={{ padding: "2px 6px", fontSize: 10, fontWeight: 600, background: isExpanded ? "#111" : "#f0f0f0", color: isExpanded ? "#fff" : "#555", border: "none", borderRadius: 3, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
                         {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         {isExpanded ? 'Ocultar' : 'Ver'}
@@ -86,41 +86,53 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                     )}
                   </td>
                 </tr>
-                {isExpanded && sale.details && (
+                {isExpanded && (sale.details || sale.notes === 'ABONO_DE_DEUDA') && (
                   <tr>
                     <td colSpan={7} style={{ padding: 0, borderBottom: "1px solid #f0f0f0", background: "#fafafa" }}>
                       <div style={{ padding: "16px 24px", borderTop: "1px solid #f0f0f0", borderBottom: "1px solid #f0f0f0" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                          <Package size={14} color="#888" />
-                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555" }}>Productos en esta venta</div>
-                        </div>
-                        <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 4, overflow: "hidden" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                            <thead style={{ background: "#fafafa" }}>
-                              <tr>
-                                {["Producto", "Cantidad", "Precio Unit.", "Subtotal"].map((h, i) => (
-                                  <th key={h} style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#bbb", padding: "6px 16px", textAlign: i > 0 ? "right" : "left", borderBottom: "1px solid #f0f0f0" }}>{h}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sale.details.map((detail, idx) => (
-                                <tr key={detail.id || idx} style={{ borderBottom: idx < sale.details!.length - 1 ? "1px solid #f5f5f5" : "none" }}>
-                                  <td style={{ padding: "6px 16px", fontSize: 11, fontWeight: 600, color: "#111" }}>{detail.productName}</td>
-                                  <td style={{ padding: "6px 16px", fontSize: 11, color: "#888", textAlign: "right" }}>
-                                    {detail.quantity} {detail.unitType === "kilogramo" ? "kg" : "un."}
-                                  </td>
-                                  <td style={{ padding: "6px 16px", fontSize: 11, color: "#555", textAlign: "right", fontWeight: 500 }}>
-                                    {formatCurrency(detail.unitPrice)}
-                                  </td>
-                                  <td style={{ padding: "6px 16px", fontSize: 11, fontWeight: 600, color: "#111", textAlign: "right" }}>
-                                    {formatCurrency(detail.subtotal)}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                        {sale.notes === 'ABONO_DE_DEUDA' ? (
+                          <div style={{ display: "flex", alignItems: "start", gap: 8, background: "#fff", padding: "16px", borderRadius: 4, border: "1px solid #e8e8e8" }}>
+                            <div style={{ color: "#2e7d32", marginTop: 2 }}><ShoppingBag size={16} /></div>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#111" }}>Abono a deuda de cliente</div>
+                              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Este registro corresponde a un pago de cuenta corriente y no incluye productos físicos.</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+                              <Package size={14} color="#888" />
+                              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555" }}>Productos en esta venta</div>
+                            </div>
+                            <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 4, overflow: "hidden" }}>
+                              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                                <thead style={{ background: "#fafafa" }}>
+                                  <tr>
+                                    {["Producto", "Cantidad", "Precio Unit.", "Subtotal"].map((h, i) => (
+                                      <th key={h} style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#bbb", padding: "6px 16px", textAlign: i > 0 ? "right" : "left", borderBottom: "1px solid #f0f0f0" }}>{h}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {sale.details!.map((detail, idx) => (
+                                    <tr key={detail.id || idx} style={{ borderBottom: idx < sale.details!.length - 1 ? "1px solid #f5f5f5" : "none" }}>
+                                      <td style={{ padding: "6px 16px", fontSize: 11, fontWeight: 600, color: "#111" }}>{detail.productName}</td>
+                                      <td style={{ padding: "6px 16px", fontSize: 11, color: "#888", textAlign: "right" }}>
+                                        {detail.quantity} {detail.unitType === "kilogramo" ? "kg" : "un."}
+                                      </td>
+                                      <td style={{ padding: "6px 16px", fontSize: 11, color: "#555", textAlign: "right", fontWeight: 500 }}>
+                                        {formatCurrency(detail.unitPrice)}
+                                      </td>
+                                      <td style={{ padding: "6px 16px", fontSize: 11, fontWeight: 600, color: "#111", textAlign: "right" }}>
+                                        {formatCurrency(detail.subtotal)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

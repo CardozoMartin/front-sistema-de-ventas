@@ -58,7 +58,9 @@ export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onCl
                         {new Date(sale.createdAt).toLocaleString('es-AR')}
                       </span>
                       <span className="text-sm font-medium text-neutral-900 mt-1">
-                        {sale.details?.length || 0} productos vendidos
+                        {sale.notes === 'ABONO_DE_DEUDA' 
+                          ? 'Pago de cuenta corriente' 
+                          : `${sale.details?.length || 0} productos vendidos`}
                       </span>
                     </div>
                     <div className="text-right">
@@ -71,7 +73,19 @@ export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onCl
                   </div>
                   
                   {/* Detalles de productos */}
-                  {sale.details && sale.details.length > 0 && (
+                  {sale.notes === 'ABONO_DE_DEUDA' ? (
+                    <div className="mt-4 border border-neutral-100 rounded-md overflow-hidden bg-neutral-50 p-4 flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-0.5 text-accent-600">
+                        <CreditCard size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-800">Abono a deuda de cliente</p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Este registro corresponde a un pago de cuenta corriente y no incluye productos físicos.
+                        </p>
+                      </div>
+                    </div>
+                  ) : sale.details && sale.details.length > 0 && (
                     <div className="mt-4 border border-neutral-100 rounded-md overflow-hidden">
                       <table className="w-full text-left border-collapse">
                         <thead className="bg-neutral-50 border-b border-neutral-100">
