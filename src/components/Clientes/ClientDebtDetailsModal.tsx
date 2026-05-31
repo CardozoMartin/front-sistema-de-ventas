@@ -67,11 +67,41 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
             </div>
           ) : (
             <div className="relative border-l-2 border-neutral-200 ml-4 md:ml-6 space-y-8 pb-4">
-              {items.map((item) => {
-                const isCharge = item.type === 'charge';
+              {(() => {
+                // Calculate effective status for all charges (FIFO) to fix old historical records
+                const totalPayments = items.filter(i => i.type === 'payment').reduce((sum, i) => sum + i.amount, 0);
+                let remainingToApply = totalPayments;
                 
-                return (
-                  <div key={item.id} className="relative pl-6 md:pl-8">
+                const processedItems = items.map(item => {
+                  if (item.type === 'charge') {
+                    const amount = item.amount;
+                    let effectiveStatus = item.status;
+                    let effectivePaid = item.paidAmount || 0;
+                    
+                    if (remainingToApply >= amount) {
+                      effectiveStatus = 'pagado';
+                      effectivePaid = amount;
+                      remainingToApply -= amount;
+                    } else if (remainingToApply > 0) {
+                      effectiveStatus = 'pago_parcial';
+                      effectivePaid = remainingToApply;
+                      remainingToApply = 0;
+                    } else {
+                      effectiveStatus = 'pendiente';
+                      effectivePaid = 0;
+                    }
+                    
+                    return { ...item, effectiveStatus, effectivePaid };
+                  }
+                  return { ...item, effectiveStatus: item.status, effectivePaid: 0 };
+                });
+
+                return processedItems.map((item) => {
+                  const isCharge = item.type === 'charge';
+                  const displayStatus = item.effectiveStatus;
+                  
+                  return (
+                    <div key={item.id} className="relative pl-6 md:pl-8">
                     {/* Timeline Marker */}
                     <div className={`absolute -left-[17px] top-1 h-8 w-8 rounded-full flex items-center justify-center border-4 border-white ${
                       isCharge ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'
@@ -89,14 +119,14 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
                           <span className="font-semibold text-neutral-700">{formatDate(item.date)}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          {isCharge && (
+                          {isCharge && displayStatus && (
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              item.status === 'pendiente' ? 'bg-amber-100 text-amber-700' : 
-                              item.status === 'pago_parcial' ? 'bg-blue-100 text-blue-700' :
-                              item.status === 'pagado' ? 'bg-emerald-100 text-emerald-700' : 
+                              displayStatus === 'pendiente' ? 'bg-amber-100 text-amber-700' : 
+                              displayStatus === 'pago_parcial' ? 'bg-blue-100 text-blue-700' :
+                              displayStatus === 'pagado' ? 'bg-emerald-100 text-emerald-700' : 
                               'bg-red-100 text-red-700'
                             }`}>
-                              {item.status === 'pago_parcial' ? 'PAGO PARCIAL' : item.status?.toUpperCase()}
+                              {displayStatus === 'pago_parcial' ? 'PAGO PARCIAL' : displayStatus?.toUpperCase()}
                             </span>
                           )}
                           <span className={`font-bold ${isCharge ? 'text-red-600' : 'text-emerald-600'}`}>
@@ -127,9 +157,9 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
                                 ))}
                               </tbody>
                             </table>
-                            {item.status === 'pago_parcial' && (
+                            {displayStatus === 'pago_parcial' && (
                               <div className="text-xs text-blue-700 bg-blue-50 px-2 py-1.5 rounded inline-block font-medium">
-                                Abonado a este ticket: {formatCurrency(item.paidAmount || 0)}
+                                Abonado a este ticket: {formatCurrency(item.effectivePaid || 0)}
                               </div>
                             )}
                           </>
@@ -160,7 +190,8 @@ export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: 
                     </div>
                   </div>
                 );
-              })}
+              });
+            })()}
             </div>
           )}
         </div>
