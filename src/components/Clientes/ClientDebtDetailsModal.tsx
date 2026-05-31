@@ -16,14 +16,29 @@ interface ClientDebtDetailsModalProps {
   onClose: () => void;
   clientId: string;
   clientName: string;
+  clientDebt: number;
 }
 
-export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName }: ClientDebtDetailsModalProps) => {
+export const ClientDebtDetailsModal = ({ show, onClose, clientId, clientName, clientDebt }: ClientDebtDetailsModalProps) => {
   const { data: statement, isLoading, error } = useClientStatement(clientId, show);
 
   if (!show) return null;
 
-  const items = statement || [];
+  let items = [...(statement || [])];
+  
+  // Calculate if there are missing old payments (due to backend bug ignoring 'ABONO_DE_DEUDA')
+  const calculatedDebt = items.reduce((acc, i) => acc + (i.type === 'charge' ? i.amount : -i.amount), 0);
+  if (calculatedDebt > clientDebt) {
+    const missingPayment = calculatedDebt - clientDebt;
+    items.push({
+      id: 'virtual-historical-payment',
+      type: 'payment',
+      amount: missingPayment,
+      date: items.length > 0 ? items[items.length - 1].date : new Date().toISOString(),
+      notes: 'Abono histórico (ajuste automático)',
+      balance: -clientDebt
+    });
+  }
 
   const handleExportPDF = () => {
     // In a real scenario, this would generate a PDF or trigger a print dialog.

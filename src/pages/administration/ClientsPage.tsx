@@ -26,7 +26,7 @@ const RealClientesPage = () => {
   const { user: currentUser } = useAuthSession();
   const isAdmin = currentUser?.role === 'admin';
 
-  const [selectedClientForDetails, setSelectedClientForDetails] = useState<{ id: string, name: string } | null>(null);
+  const [selectedClientForDetails, setSelectedClientForDetails] = useState<{ id: string, name: string, debt: number } | null>(null);
 
   const { data: clients = [], isLoading, error } = useClients();
   const deleteClientMutation = useDeleteClient();
@@ -224,7 +224,7 @@ const RealClientesPage = () => {
         return (
           <div className="flex items-center justify-center gap-1.5">
             <button
-              onClick={() => setSelectedClientForDetails({ id: client.id, name: client.name })}
+              onClick={() => setSelectedClientForDetails({ id: client.id, name: client.name, debt: client.debt })}
               className="icon-btn hover:bg-blue-50 hover:text-blue-700"
               title="Ver Detalle de Cuenta"
             >
@@ -315,6 +315,7 @@ const RealClientesPage = () => {
         onClose={() => setSelectedClientForDetails(null)}
         clientId={selectedClientForDetails?.id || ""}
         clientName={selectedClientForDetails?.name || ""}
+        clientDebt={selectedClientForDetails?.debt || 0}
       />
     </div>
   );
