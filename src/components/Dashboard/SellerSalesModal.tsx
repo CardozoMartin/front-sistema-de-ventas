@@ -59,7 +59,7 @@ export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onCl
                       </span>
                       <span className="text-sm font-medium text-neutral-900 mt-1">
                         {sale.notes === 'ABONO_DE_DEUDA' 
-                          ? 'Pago de cuenta corriente' 
+                          ? (sale.details?.[0]?.productName || 'Pago de cuenta corriente')
                           : `${sale.details?.length || 0} productos vendidos`}
                       </span>
                     </div>

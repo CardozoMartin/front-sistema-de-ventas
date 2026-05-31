@@ -64,7 +64,7 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                   </td>
                   <td style={{ padding: "9px 16px", fontSize: 12, color: "#555", display: "flex", alignItems: "center", gap: 6 }}>
                     <ShoppingBag size={12} color="#aaa" />
-                    {sale.notes === 'ABONO_DE_DEUDA' ? 'Abono deuda' : (sale.details && sale.details.length > 0 ? `${sale.details.length} prod.` : "-")}
+                    {sale.notes === 'ABONO_DE_DEUDA' ? (sale.details?.[0]?.productName || 'Abono deuda') : (sale.details && sale.details.length > 0 ? `${sale.details.length} prod.` : "-")}
                   </td>
                   <td style={{ padding: "9px 16px", fontSize: 12, fontWeight: 600, color: "#111" }}>
                     {formatCurrency(sale.total)}
