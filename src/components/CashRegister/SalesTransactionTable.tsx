@@ -4,6 +4,7 @@ import type { Sale } from "../../services/types";
 import { ChevronDown, ChevronUp, ShoppingBag, Package } from "lucide-react";
 import React, { useState } from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { useClients } from "../../hooks/useClients";
 
 interface SalesTransactionTableProps {
   sales: Sale[];
@@ -12,6 +13,8 @@ interface SalesTransactionTableProps {
 
 const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTableProps) => {
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
+  const { data: clientsData } = useClients();
+  const clientsList = Array.isArray(clientsData) ? clientsData : (clientsData as any)?.clients || [];
 
   if (isLoading) {
     return <div style={{ textAlign: "center", padding: "40px" }}><div className="spinner"></div></div>;
@@ -64,7 +67,7 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                   </td>
                   <td style={{ padding: "9px 16px", fontSize: 12, color: "#555", display: "flex", alignItems: "center", gap: 6 }}>
                     <ShoppingBag size={12} color="#aaa" />
-                    {sale.notes === 'ABONO_DE_DEUDA' ? (sale.details?.[0]?.productName || 'Abono deuda') : (sale.details && sale.details.length > 0 ? `${sale.details.length} prod.` : "-")}
+                    {sale.notes === 'ABONO_DE_DEUDA' ? (sale.details?.[0]?.productName || (sale.client ? "Abono de " + (clientsList.find((c: any) => c.id === sale.client || c._id === sale.client)?.name || 'Cliente') : 'Abono deuda')) : (sale.details && sale.details.length > 0 ? `${sale.details.length} prod.` : "-")}
                   </td>
                   <td style={{ padding: "9px 16px", fontSize: 12, fontWeight: 600, color: "#111" }}>
                     {formatCurrency(sale.total)}
@@ -94,7 +97,7 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                           <div style={{ display: "flex", alignItems: "start", gap: 8, background: "#fff", padding: "16px", borderRadius: 4, border: "1px solid #e8e8e8" }}>
                             <div style={{ color: "#2e7d32", marginTop: 2 }}><ShoppingBag size={16} /></div>
                             <div>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: "#111" }}>{sale.details?.[0]?.productName || "Abono a deuda de cliente"}</div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#111" }}>{sale.details?.[0]?.productName || (sale.client ? "Abono de " + (clientsList.find((c: any) => c.id === sale.client || c._id === sale.client)?.name || 'Cliente') : "Abono a deuda de cliente")}</div>
                               <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Este registro corresponde a un pago de cuenta corriente y no incluye productos físicos.</div>
                             </div>
                           </div>

@@ -190,6 +190,8 @@ export interface Sale {
   id: string;
   seller: string;
   cashRegister: string;
+  client?: string;
+  clientName?: string;
   total: number;
   paidAmount?: number;
   totalProfit?: number;

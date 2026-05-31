@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calendar, CreditCard, ShoppingBag } from 'lucide-react';
+import { useClients } from '../../hooks/useClients';
 
 interface SellerSalesModalProps {
   isOpen: boolean;
@@ -20,6 +21,9 @@ const formatCurrency = (value: number): string => {
 };
 
 export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onClose, sellerName, sales }) => {
+  const { data: clientsData } = useClients();
+  const clientsList = Array.isArray(clientsData) ? clientsData : (clientsData as any)?.clients || [];
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -59,7 +63,7 @@ export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onCl
                       </span>
                       <span className="text-sm font-medium text-neutral-900 mt-1">
                         {sale.notes === 'ABONO_DE_DEUDA' 
-                          ? (sale.details?.[0]?.productName || 'Pago de cuenta corriente')
+                          ? (sale.details?.[0]?.productName || (sale.client ? "Abono de " + (clientsList.find((c: any) => c.id === sale.client || c._id === sale.client)?.name || 'Cliente') : 'Pago de cuenta corriente'))
                           : `${sale.details?.length || 0} productos vendidos`}
                       </span>
                     </div>
@@ -79,7 +83,7 @@ export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onCl
                         <CreditCard size={16} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-800">{sale.details?.[0]?.productName || 'Abono a deuda de cliente'}</p>
+                        <p className="text-sm font-medium text-neutral-800">{sale.details?.[0]?.productName || (sale.client ? "Abono de " + (clientsList.find((c: any) => c.id === sale.client || c._id === sale.client)?.name || 'Cliente') : 'Abono a deuda de cliente')}</p>
                         <p className="text-xs text-neutral-500 mt-1">
                           Este registro corresponde a un pago de cuenta corriente y no incluye productos físicos.
                         </p>
