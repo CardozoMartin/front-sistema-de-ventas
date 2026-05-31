@@ -79,7 +79,7 @@ export const SellerSalesModal: React.FC<SellerSalesModalProps> = ({ isOpen, onCl
                         <CreditCard size={16} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-800">Abono a deuda de cliente</p>
+                        <p className="text-sm font-medium text-neutral-800">{sale.details?.[0]?.productName || 'Abono a deuda de cliente'}</p>
                         <p className="text-xs text-neutral-500 mt-1">
                           Este registro corresponde a un pago de cuenta corriente y no incluye productos físicos.
                         </p>

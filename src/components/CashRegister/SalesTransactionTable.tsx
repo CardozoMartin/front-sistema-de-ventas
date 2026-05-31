@@ -94,7 +94,7 @@ const SalesTransactionTable = ({ sales, isLoading = false }: SalesTransactionTab
                           <div style={{ display: "flex", alignItems: "start", gap: 8, background: "#fff", padding: "16px", borderRadius: 4, border: "1px solid #e8e8e8" }}>
                             <div style={{ color: "#2e7d32", marginTop: 2 }}><ShoppingBag size={16} /></div>
                             <div>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: "#111" }}>Abono a deuda de cliente</div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#111" }}>{sale.details?.[0]?.productName || "Abono a deuda de cliente"}</div>
                               <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Este registro corresponde a un pago de cuenta corriente y no incluye productos físicos.</div>
                             </div>
                           </div>
